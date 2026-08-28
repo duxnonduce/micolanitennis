@@ -60,15 +60,19 @@ del sito (serve per i link nelle email).
 3. Aggiungi le environment variables (punto 3)
 4. Deploy
 
-### 5. Primo utente segreteria/admin
+### 5. Primo account staff (segreteria/admin)
 
-Il questionario pubblico crea solo utenti con ruolo `athlete`/`parent`. Per
-creare il primo utente segreteria:
+**Non usare più il questionario pubblico per crearlo** — ora c'è un percorso dedicato, separato dal flusso iscrizioni, così non si rischia più confusione tra account atleta e account staff.
 
-1. Registra un account qualsiasi tramite `/preventivo` (anche fittizio)
-2. Su Supabase → **Table Editor → profiles**, trova la riga con quell'email
-   e cambia `role` in `secretary` o `admin`
-3. Da quel momento quell'account può accedere a `/admin/richieste`
+1. Genera una stringa lunga e casuale (es. su [1password.com/password-generator](https://1password.com/password-generator) o simile) e impostala come `ADMIN_BOOTSTRAP_SECRET` nelle environment variables di Vercel
+2. Fai un redeploy per applicare la nuova variabile
+3. Vai su `https://tuosito.vercel.app/staff-setup` (questa pagina **non richiede login**, è protetta dal codice segreto che hai appena impostato)
+4. Compila nome, email, password e il codice segreto, scegli il ruolo (Segreteria/Admin/Superadmin), crea l'account
+5. Da quel momento quell'account accede a `/admin/richieste` e `/admin/pianificazione` da `/accedi`
+
+**Dopo aver creato tutti gli account staff che ti servono**, per sicurezza cambia di nuovo `ADMIN_BOOTSTRAP_SECRET` su Vercel (o rimuovi la pagina in futuro) così quel codice smette di funzionare — è pensato per il setup iniziale, non per restare attivo indefinitamente.
+
+Se in futuro ti serve un altro account staff, ripeti la procedura (puoi tenere lo stesso secret se preferisci comodità a sicurezza extra, ma sconsigliato su un sito pubblico).
 
 ---
 
