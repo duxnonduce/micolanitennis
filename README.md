@@ -76,7 +76,19 @@ Se in futuro ti serve un altro account staff, ripeti la procedura (puoi tenere l
 
 ---
 
-## Fase 3 — Calendario lezioni e Area maestri (appena aggiunta)
+## Fase 3b — Griglia visuale di pianificazione (appena aggiunta)
+
+`/admin/pianificazione` ora mostra la griglia settimanale come da tua idea:
+- Un tab per giorno (Lun–Dom)
+- 6 colonne campi, righe a mezz'ora
+- Blocchi colorati per categoria (Baby, Avviamento, Agonistico/Pro, Adulti Avv./Pro — legenda sopra la griglia)
+- Clicca una cella vuota per posizionare un gruppo esistente (scegli corso poi gruppo)
+- Clicca un blocco già posizionato per vedere gli atleti assegnati, cambiare il maestro, o rimuoverlo dalla griglia
+- I nomi degli atleti compaiono automaticamente nel blocco appena una richiesta viene approvata su quello slot — nessuna azione manuale richiesta
+
+La creazione/eliminazione dei **gruppi** (nome, capienza, livello) resta nella sezione "Gestisci gruppi", pieghevole sotto la griglia — i gruppi vanno creati lì prima di poterli posizionare sulla griglia.
+
+## Fase 3 — Calendario lezioni e Area maestri
 
 **Prima di testare, esegui la migrazione `supabase/04_maestri.sql`** da SQL Editor (aggiunge il maestro di riferimento per slot e i permessi per le presenze).
 
