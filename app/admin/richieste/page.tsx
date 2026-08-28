@@ -46,6 +46,12 @@ export default async function AdminRichiestePage({
     <div className="mx-auto max-w-5xl px-4 py-10">
       <h1 className="mb-6 text-2xl font-bold text-brand-blue">Coda richieste</h1>
 
+      <div className="mb-4">
+        <a href="/admin/pianificazione" className="text-sm font-medium text-brand-blue">
+          → Vai alla Pianificazione (gruppi, campi, slot)
+        </a>
+      </div>
+
       <div className="mb-6 flex flex-wrap gap-2">
         <a
           href="/admin/richieste?status=tutte"

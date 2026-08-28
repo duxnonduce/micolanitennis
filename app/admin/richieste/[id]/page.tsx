@@ -28,6 +28,42 @@ export default async function AdminRequestDetailPage({ params }: { params: { id:
     .select('*')
     .eq('athlete_id', request.athletes.id);
 
+  // Gruppi/slot disponibili per questo corso, con conteggio occupazione per capacità
+  const { data: groups } = await supabase
+    .from('groups')
+    .select('*, recurring_slots(*, courts(name)), levels(name)')
+    .eq('course_id', request.course_id);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const slotIds = (groups ?? []).flatMap((g: any) => g.recurring_slots.map((s: any) => s.id));
+  const { data: activeAssignments } = slotIds.length
+    ? await supabase
+        .from('assignments')
+        .select('recurring_slot_id')
+        .in('recurring_slot_id', slotIds)
+        .or(`active_to.is.null,active_to.gte.${today}`)
+    : { data: [] as any[] };
+
+  const occupancyBySlot: Record<string, number> = {};
+  (activeAssignments ?? []).forEach((a: any) => {
+    occupancyBySlot[a.recurring_slot_id] = (occupancyBySlot[a.recurring_slot_id] ?? 0) + 1;
+  });
+
+  const candidateSlots = (groups ?? []).flatMap((g: any) =>
+    g.recurring_slots.map((s: any) => ({
+      id: s.id,
+      groupName: g.name,
+      groupId: g.id,
+      levelName: g.levels?.name ?? null,
+      maxCapacity: g.max_capacity,
+      occupied: occupancyBySlot[s.id] ?? 0,
+      dayOfWeek: s.day_of_week,
+      startTime: s.start_time,
+      durationMinutes: s.duration_minutes,
+      courtName: s.courts?.name,
+    }))
+  );
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <a href="/admin/richieste" className="text-sm text-brand-blue">&larr; Coda richieste</a>
@@ -74,7 +110,13 @@ export default async function AdminRequestDetailPage({ params }: { params: { id:
         </p>
       </div>
 
-      <RequestActions requestId={request.id} currentStatus={request.status} />
+      <RequestActions
+        requestId={request.id}
+        currentStatus={request.status}
+        weeklyFrequency={request.weekly_frequency}
+        candidateSlots={candidateSlots}
+        athleteLevelId={request.athletes.level_id}
+      />
     </div>
   );
 }

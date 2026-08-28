@@ -38,6 +38,23 @@ export default async function AreaRiservataPage() {
         .order('created_at', { ascending: false })
     : { data: [] as any[] };
 
+  // Per le richieste approvate, recupera gli slot assegnati (giorno/ora/campo reali)
+  const approvedRequestIds = (requests ?? []).filter((r: any) => r.status === 'approvata').map((r: any) => r.id);
+  const { data: assignments } = approvedRequestIds.length
+    ? await supabase
+        .from('assignments')
+        .select('request_id, recurring_slots(day_of_week, start_time, courts(name), groups(name))')
+        .in('request_id', approvedRequestIds)
+    : { data: [] as any[] };
+
+  const assignmentsByRequest: Record<string, any[]> = {};
+  (assignments ?? []).forEach((a: any) => {
+    if (!assignmentsByRequest[a.request_id]) assignmentsByRequest[a.request_id] = [];
+    assignmentsByRequest[a.request_id].push(a.recurring_slots);
+  });
+
+  const DAY_NAMES = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="mb-6 text-2xl font-bold text-brand-blue">Area riservata</h1>
@@ -71,6 +88,18 @@ export default async function AreaRiservataPage() {
                 <p className="mt-3 rounded-lg bg-orange-50 p-3 text-sm text-orange-800">
                   {r.user_message}
                 </p>
+              )}
+              {r.status === 'approvata' && assignmentsByRequest[r.id]?.length > 0 && (
+                <div className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+                  <p className="font-medium">Giorni e orari confermati:</p>
+                  <ul className="mt-1 space-y-1">
+                    {assignmentsByRequest[r.id].map((slot: any, idx: number) => (
+                      <li key={idx}>
+                        {DAY_NAMES[slot.day_of_week]} {slot.start_time.slice(0, 5)} — {slot.courts?.name} ({slot.groups?.name})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
 
               {r.request_installments?.length > 0 && (
