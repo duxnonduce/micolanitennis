@@ -17,16 +17,17 @@ export default async function PianificazionePage() {
   const { data: levels } = await supabase.from('levels').select('*').order('numeric_value');
   const { data: courts } = await supabase.from('courts').select('*').order('display_order');
 
-  const { data: groups } = await supabase
+  const { data: groups, error: groupsError } = await supabase
     .from('groups')
-    .select('*, recurring_slots(*, courts(name)), assignments(active_to)')
+    .select('*, recurring_slots(*, courts(name))')
     .order('name');
+
+  if (groupsError) {
+    console.error('Errore nel caricamento gruppi:', groupsError.message);
+  }
 
   const groupsByCourse: Record<string, any[]> = {};
   (groups ?? []).forEach((g: any) => {
-    const occupancyBySlot: Record<string, number> = {};
-    // Nota: assignments qui è relativo al gruppo tramite recurring_slot_id -> serve rifetch mirato,
-    // per semplicità in questa vista mostriamo il conteggio a livello di singolo slot lato client.
     if (!groupsByCourse[g.course_id]) groupsByCourse[g.course_id] = [];
     groupsByCourse[g.course_id].push(g);
   });
