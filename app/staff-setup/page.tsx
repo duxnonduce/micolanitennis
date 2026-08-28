@@ -66,6 +66,7 @@ export default function CreaAccountStaffPage() {
             <option value="secretary">Segreteria</option>
             <option value="admin">Admin</option>
             <option value="superadmin">Superadmin</option>
+            <option value="coach">Maestro</option>
           </select>
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}

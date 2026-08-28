@@ -6,19 +6,22 @@ import { DAY_NAMES_SHORT, formatTime } from '@/lib/planning-constants';
 
 type Level = { id: string; name: string; numeric_value: number };
 type Court = { id: string; name: string; is_covered: boolean; surface: string };
-type Slot = { id: string; day_of_week: number; start_time: string; duration_minutes: number; court_id: string; courts: { name: string } };
+type Slot = { id: string; day_of_week: number; start_time: string; duration_minutes: number; court_id: string; default_coach_id: string | null; courts: { name: string } };
 type Group = { id: string; name: string; max_capacity: number; level_id: string | null; recurring_slots: Slot[] };
 type Course = { id: string; name: string; category: string };
+type Coach = { id: string; full_name: string };
 
 export default function PlanningBoard({
   courses,
   levels,
   courts,
+  coaches,
   groupsByCourse,
 }: {
   courses: Course[];
   levels: Level[];
   courts: Court[];
+  coaches: Coach[];
   groupsByCourse: Record<string, Group[]>;
 }) {
   const [openCourse, setOpenCourse] = useState<string | null>(courses[0]?.id ?? null);
@@ -40,7 +43,7 @@ export default function PlanningBoard({
           {openCourse === course.id && (
             <div className="mt-4 space-y-4 border-t pt-4">
               {(groupsByCourse[course.id] ?? []).map((group) => (
-                <GroupCard key={group.id} group={group} levels={levels} courts={courts} />
+                <GroupCard key={group.id} group={group} levels={levels} courts={courts} coaches={coaches} />
               ))}
               <NewGroupForm courseId={course.id} levels={levels} />
             </div>
@@ -51,7 +54,7 @@ export default function PlanningBoard({
   );
 }
 
-function GroupCard({ group, levels, courts }: { group: Group; levels: Level[]; courts: Court[] }) {
+function GroupCard({ group, levels, courts, coaches }: { group: Group; levels: Level[]; courts: Court[]; coaches: Coach[] }) {
   const router = useRouter();
   const [showSlotForm, setShowSlotForm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -102,12 +105,17 @@ function GroupCard({ group, levels, courts }: { group: Group; levels: Level[]; c
       </div>
 
       {group.recurring_slots?.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 space-y-2">
           {group.recurring_slots.map((s) => (
-            <span key={s.id} className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs">
-              {DAY_NAMES_SHORT[s.day_of_week]} {formatTime(s.start_time)} · {s.courts?.name}
-              <button onClick={() => deleteSlot(s.id)} className="text-gray-400 hover:text-red-500">✕</button>
-            </span>
+            <div key={s.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-xs">
+              <span className="font-medium">
+                {DAY_NAMES_SHORT[s.day_of_week]} {formatTime(s.start_time)} · {s.courts?.name}
+              </span>
+              <CoachSelect slotId={s.id} coaches={coaches} currentCoachId={s.default_coach_id} />
+              <button onClick={() => deleteSlot(s.id)} className="ml-auto text-gray-400 hover:text-red-500">
+                ✕ elimina
+              </button>
+            </div>
           ))}
         </div>
       )}
@@ -179,6 +187,36 @@ function NewSlotForm({ groupId, courts, onDone }: { groupId: string; courts: Cou
       </div>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>
+  );
+}
+
+function CoachSelect({ slotId, coaches, currentCoachId }: { slotId: string; coaches: Coach[]; currentCoachId: string | null }) {
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+
+  async function updateCoach(coachId: string) {
+    setSaving(true);
+    await fetch(`/api/admin/slots/${slotId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ default_coach_id: coachId || null }),
+    });
+    setSaving(false);
+    router.refresh();
+  }
+
+  return (
+    <select
+      className="rounded border-gray-300 bg-white px-2 py-1 text-xs"
+      defaultValue={currentCoachId ?? ''}
+      disabled={saving}
+      onChange={(e) => updateCoach(e.target.value)}
+    >
+      <option value="">Nessun maestro</option>
+      {coaches.map((c) => (
+        <option key={c.id} value={c.id}>{c.full_name}</option>
+      ))}
+    </select>
   );
 }
 

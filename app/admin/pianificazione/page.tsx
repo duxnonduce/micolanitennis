@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireStaff } from '@/lib/planning';
 import PlanningBoard from './planning-board';
+import RegenerateButton from './regenerate-button';
 
 export const revalidate = 0;
 
@@ -16,6 +17,11 @@ export default async function PianificazionePage() {
 
   const { data: levels } = await supabase.from('levels').select('*').order('numeric_value');
   const { data: courts } = await supabase.from('courts').select('*').order('display_order');
+  const { data: coaches } = await supabase
+    .from('profiles')
+    .select('id, full_name')
+    .eq('role', 'coach')
+    .order('full_name');
 
   const { data: groups, error: groupsError } = await supabase
     .from('groups')
@@ -35,17 +41,22 @@ export default async function PianificazionePage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="mb-2 text-2xl font-bold text-brand-blue">Pianificazione</h1>
-      <p className="mb-8 text-gray-600">
+      <p className="mb-6 text-gray-600">
         Crea i gruppi per ogni corso e posizionali nel modello settimanale (giorno, ora, campo).
         Questo è il modello generale — non contiene i nomi degli atleti.
       </p>
 
-      <PlanningBoard
-        courses={courses ?? []}
-        levels={levels ?? []}
-        courts={courts ?? []}
-        groupsByCourse={groupsByCourse}
-      />
+      <RegenerateButton />
+
+      <div className="mt-6">
+        <PlanningBoard
+          courses={courses ?? []}
+          levels={levels ?? []}
+          courts={courts ?? []}
+          coaches={coaches ?? []}
+          groupsByCourse={groupsByCourse}
+        />
+      </div>
     </div>
   );
 }

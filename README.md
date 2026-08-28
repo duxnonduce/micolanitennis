@@ -76,7 +76,20 @@ Se in futuro ti serve un altro account staff, ripeti la procedura (puoi tenere l
 
 ---
 
+## Fase 3 — Calendario lezioni e Area maestri (appena aggiunta)
+
+**Prima di testare, esegui la migrazione `supabase/04_maestri.sql`** da SQL Editor (aggiunge il maestro di riferimento per slot e i permessi per le presenze).
+
+Novità:
+- **Generazione calendario**: da `/admin/pianificazione`, il pulsante "Rigenera calendario" trasforma gli slot ricorrenti in lezioni reali per tutta la stagione (saltando le chiusure) e crea le prenotazioni per gli atleti già assegnati. È sicura da rilanciare quante volte vuoi.
+- **Generazione automatica all'approvazione**: da ora, approvare una richiesta genera subito le lezioni/prenotazioni per gli slot scelti — non serve più aspettare la rigenerazione manuale per le nuove iscrizioni.
+- **Maestro di riferimento per slot**: in Pianificazione, ogni slot ha un menu a tendina per assegnare un maestro (serve prima creare l'account maestro da `/staff-setup`, ruolo "Maestro").
+- **`/agenda`**: nuova pagina per i maestri (e per lo staff, che vede tutte le lezioni). Mostra le lezioni di una data scelta con l'elenco degli atleti; un tap sul nome fa scorrere lo stato Da segnare → Presente → Assente.
+
+Cosa manca ancora: gettoni/recuperi per le assenze, lista d'attesa, cancellazione autonoma dell'atleta dal portale.
+
 ## Test consigliati prima di aprire le iscrizioni
+
 
 - Invia una richiesta di preventivo per ciascuno dei 6 corsi, con almeno una
   combinazione di rate diversa per corso — controlla che gli importi in email

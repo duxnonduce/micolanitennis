@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   if (!email || !password || !fullName) {
     return NextResponse.json({ error: 'Dati mancanti.' }, { status: 400 });
   }
-  const finalRole = ['secretary', 'admin', 'superadmin'].includes(role) ? role : 'secretary';
+  const finalRole = ['secretary', 'admin', 'superadmin', 'coach'].includes(role) ? role : 'secretary';
 
   const service = createServiceClient();
 

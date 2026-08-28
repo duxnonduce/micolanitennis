@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { sendRequestApprovedEmail } from '@/lib/email';
+import { regenerateSlotCalendar } from '@/lib/calendar-service';
 
 const DAY_NAMES = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
 
@@ -70,6 +71,15 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }));
   const { error: assignErr } = await service.from('assignments').insert(assignmentRows);
   if (assignErr) return NextResponse.json({ error: 'Errore nella creazione delle assegnazioni.' }, { status: 500 });
+
+  // Genera subito lezioni + prenotazione per i nuovi slot assegnati (idempotente, non tocca dati esistenti)
+  for (const slotId of slotIds) {
+    try {
+      await regenerateSlotCalendar(service, slotId);
+    } catch (e) {
+      console.error('Errore generazione calendario per slot', slotId, e);
+    }
+  }
 
   const { error: updateErr } = await service
     .from('requests')

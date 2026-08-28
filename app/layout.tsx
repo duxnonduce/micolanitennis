@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="hidden gap-6 text-sm font-medium text-gray-700 md:flex">
               <a href="/corsi" className="hover:text-brand-blue">Corsi</a>
               <a href="/area-riservata" className="hover:text-brand-blue">Area riservata</a>
+              <a href="/agenda" className="hover:text-brand-blue">Agenda</a>
               <a href="/accedi?next=/admin/richieste" className="hover:text-brand-blue">Admin</a>
             </nav>
             <a href="/preventivo" className="btn-primary !px-4 !py-2 text-sm">

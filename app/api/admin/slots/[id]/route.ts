@@ -1,17 +1,34 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+async function checkStaff(supabase: ReturnType<typeof createClient>) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 });
-
+  if (!user) return null;
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (!profile || !['secretary', 'admin', 'superadmin'].includes(profile.role)) {
-    return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 });
-  }
+  if (!profile || !['secretary', 'admin', 'superadmin'].includes(profile.role)) return null;
+  return user;
+}
+
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+  const supabase = createClient();
+  const user = await checkStaff(supabase);
+  if (!user) return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 });
+
+  const { default_coach_id } = await req.json();
+  const { error } = await supabase
+    .from('recurring_slots')
+    .update({ default_coach_id: default_coach_id || null })
+    .eq('id', params.id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+  const supabase = createClient();
+  const user = await checkStaff(supabase);
+  if (!user) return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 });
 
   // Blocco di sicurezza: se ci sono atleti già assegnati a questo slot, evita la cancellazione
   // silenziosa — meglio un errore esplicito che perdere il collegamento atleta↔slot.

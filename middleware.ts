@@ -32,7 +32,8 @@ export async function middleware(request: NextRequest) {
 
   const isProtected =
     request.nextUrl.pathname.startsWith('/area-riservata') ||
-    request.nextUrl.pathname.startsWith('/admin');
+    request.nextUrl.pathname.startsWith('/admin') ||
+    request.nextUrl.pathname.startsWith('/agenda');
 
   if (isProtected && !user) {
     const redirectUrl = new URL('/accedi', request.url);
@@ -44,5 +45,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/area-riservata/:path*', '/admin/:path*'],
+  matcher: ['/area-riservata/:path*', '/admin/:path*', '/agenda/:path*'],
 };
