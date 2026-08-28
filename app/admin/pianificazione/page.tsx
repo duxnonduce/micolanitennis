@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { requireStaff, countOccupancy } from '@/lib/planning';
+import { requireStaff } from '@/lib/planning';
 import PlanningBoard from './planning-board';
 
 export const revalidate = 0;

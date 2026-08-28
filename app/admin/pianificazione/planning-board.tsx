@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DAY_NAMES_SHORT, formatTime } from '@/lib/planning';
+import { DAY_NAMES_SHORT, formatTime } from '@/lib/planning-constants';
 
 type Level = { id: string; name: string; numeric_value: number };
 type Court = { id: string; name: string; is_covered: boolean; surface: string };
